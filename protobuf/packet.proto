@@ -1,0 +1,21 @@
+syntax = "proto3";
+
+message Packet {
+    Header header = 1;
+    Telemetry telemetry = 2;
+}
+
+message Header {
+    uint32 index = 1;
+    uint64 time = 2;
+}
+
+message Telemetry {
+    message ENV {
+        float temperature = 1;
+        float humidity = 2;
+        float pressure = 3;
+        float light = 4;
+    }
+    ENV env = 1;
+}
