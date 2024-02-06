@@ -13,7 +13,7 @@ void setup() {
         while (1);
     }
 
-    initRadio();
+    radio::init();
 }
 
 void loop() {
@@ -35,7 +35,9 @@ void loop() {
     packet.telemetry.env.humidity = humidity;
     packet.telemetry.env.pressure = pressure;
     packet.telemetry.env.light = light;
-    sendPacket(packet);
+    
+    radio::encode(packet);
+    radio::send();
 
     // send packet
     /*
@@ -46,5 +48,5 @@ void loop() {
 
     counter++;
 
-    delay(5000);
+    delay(1000);
 }
