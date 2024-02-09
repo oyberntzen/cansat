@@ -2,11 +2,15 @@
 #include "libraries/radio.cpp"
 
 int counter = 0;
+int session_id = 0;
 Packet packet;
 
 void setup() {
     Serial.begin(9600);
     //while (!Serial);
+
+    randomSeed(analogRead(0));
+    session_id = random(1<<31);
 
     if (!ENV.begin()) {
         Serial.println("Failed to initialize MKR ENV shield!");
@@ -14,6 +18,7 @@ void setup() {
     }
 
     radio::init();
+
 }
 
 void loop() {
@@ -28,6 +33,7 @@ void loop() {
     packet.has_header = true;
     packet.header.index = counter;
     packet.header.time = millis();
+    packet.header.session_id = session_id;
 
     packet.has_telemetry = true;
     packet.telemetry.has_env = true;

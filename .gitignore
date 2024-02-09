@@ -36,3 +36,4 @@ __pycache__
 .theia
 reciever/libraries
 satellite/libraries
+data

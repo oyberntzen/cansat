@@ -5,20 +5,19 @@ import matplotlib.pyplot as plt
 import matplotlib.animation as animation
 
 import threading
+import os
 
 packets = []
 packets_lock = threading.Lock()
-done = False
+done = threading.Event()
 
-def packets_serial():
-    print("test")
-    arduino = serial.Serial(port="COM6", baudrate=9600, timeout=0.01)
-    while not done:
+data_dir = "./data"
+
+def read_packet(arduino):
+    while not done.is_set():
         first_byte = []
         while len(first_byte) == 0:
             first_byte = arduino.read(1)
-            if done:
-                return
         length = int(first_byte[0])
 
         data = arduino.read(length)
@@ -28,6 +27,26 @@ def packets_serial():
         packet = packet_pb2.Packet()
         packet.ParseFromString(data)
         print(packet)
+        return packet
+
+
+def read_packets(arduino, first_packet=None):
+    if first_packet == None:
+        first_packet = read_packet(arduino)
+    session_id = first_packet.header.session_id
+    packets = []
+
+    # Read packets from file
+
+    packets.append(first_packet)
+
+    print("test")
+    while not done.is_set():
+        packet = read_packet(arduino)
+
+        if packet.header.session_id != session_id:
+            read_packets(arduino, first_packet)
+            return
 
         with packets_lock:
             packets.append(packet)
@@ -50,7 +69,17 @@ def plot_variable():
 
 
 def main():
-    global done
+    if not os.path.exists(data_dir):
+        os.makedirs(data_dir)
+
+    thread = threading.Thread(target=read_packets)
+    thread.start()
+
+    plot_variable()
+    done.set()
+    
+
+    """global done
     while not done:
         command = input("> ").split()
 
@@ -59,7 +88,7 @@ def main():
         elif command[0] == "serial":
             threading.Thread(target=packets_serial).start()
         elif command[0] == "plot":
-            plot_variable()
+            plot_variable()"""
 
 if __name__ == "__main__":
     main()

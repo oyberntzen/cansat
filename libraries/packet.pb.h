@@ -13,6 +13,7 @@
 typedef struct _Header {
     uint32_t index;
     uint64_t time;
+    uint32_t session_id;
 } Header;
 
 typedef struct _Telemetry_ENV {
@@ -41,17 +42,18 @@ extern "C" {
 
 /* Initializer values for message structs */
 #define Packet_init_default                      {false, Header_init_default, false, Telemetry_init_default}
-#define Header_init_default                      {0, 0}
+#define Header_init_default                      {0, 0, 0}
 #define Telemetry_init_default                   {false, Telemetry_ENV_init_default}
 #define Telemetry_ENV_init_default               {0, 0, 0, 0}
 #define Packet_init_zero                         {false, Header_init_zero, false, Telemetry_init_zero}
-#define Header_init_zero                         {0, 0}
+#define Header_init_zero                         {0, 0, 0}
 #define Telemetry_init_zero                      {false, Telemetry_ENV_init_zero}
 #define Telemetry_ENV_init_zero                  {0, 0, 0, 0}
 
 /* Field tags (for use in manual encoding/decoding) */
 #define Header_index_tag                         1
 #define Header_time_tag                          2
+#define Header_session_id_tag                    3
 #define Telemetry_ENV_temperature_tag            1
 #define Telemetry_ENV_humidity_tag               2
 #define Telemetry_ENV_pressure_tag               3
@@ -71,7 +73,8 @@ X(a, STATIC,   OPTIONAL, MESSAGE,  telemetry,         2)
 
 #define Header_FIELDLIST(X, a) \
 X(a, STATIC,   SINGULAR, UINT32,   index,             1) \
-X(a, STATIC,   SINGULAR, UINT64,   time,              2)
+X(a, STATIC,   SINGULAR, UINT64,   time,              2) \
+X(a, STATIC,   SINGULAR, UINT32,   session_id,        3)
 #define Header_CALLBACK NULL
 #define Header_DEFAULT NULL
 
@@ -101,9 +104,9 @@ extern const pb_msgdesc_t Telemetry_ENV_msg;
 #define Telemetry_ENV_fields &Telemetry_ENV_msg
 
 /* Maximum encoded size of messages (where known) */
-#define Header_size                              17
+#define Header_size                              23
 #define PACKET_PB_H_MAX_SIZE                     Packet_size
-#define Packet_size                              43
+#define Packet_size                              49
 #define Telemetry_ENV_size                       20
 #define Telemetry_size                           22
 
