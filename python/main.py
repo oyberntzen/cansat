@@ -1,5 +1,6 @@
 import serial
 import packet_pb2
+from google.protobuf.message import DecodeError 
 
 import matplotlib.pyplot as plt
 import matplotlib.animation as animation
@@ -13,43 +14,81 @@ done = threading.Event()
 
 data_dir = "./data"
 
+def data_to_packet(data):
+    packet = packet_pb2.Packet()
+    try:
+        packet.ParseFromString(data)
+    except DecodeError as e:
+        print("Invalid packet")
+        return None
+    return packet
+
 def read_packet(arduino):
     while not done.is_set():
         first_byte = []
-        while len(first_byte) == 0:
+        while len(first_byte) == 0 and not done.is_set():
             first_byte = arduino.read(1)
+        if done.is_set():
+            break
         length = int(first_byte[0])
 
         data = arduino.read(length)
         if len(data) != length:
             continue
 
-        packet = packet_pb2.Packet()
-        packet.ParseFromString(data)
+        packet = data_to_packet(data)
+        if packet == None:
+            continue
         print(packet)
         return packet
 
 
 def read_packets(arduino, first_packet=None):
+    global packets
+
     if first_packet == None:
         first_packet = read_packet(arduino)
     session_id = first_packet.header.session_id
-    packets = []
 
     # Read packets from file
+    with packets_lock:
+        packets = []
+        path = f"{data_dir}/{session_id}"
+        if os.path.exists(path):
+            with open(path, "rb") as file:
+                while True:
+                    first_byte = file.read(1)
+                    if len(first_packet) != 1:
+                        break
+                    length = int(first_byte[0])
 
-    packets.append(first_packet)
+                    data = file.read(length)
+                    if len(data) != length:
+                        print("Wrong file data")
+                        break
+                    packet = data_to_packet(data)
+                    if packet == None:
+                        print("Wrong file data")
+                        break
+                    packets.append(packet)
+        else:
+            open(path, "x").close()
 
-    print("test")
-    while not done.is_set():
-        packet = read_packet(arduino)
+        packets.append(first_packet)
 
-        if packet.header.session_id != session_id:
-            read_packets(arduino, first_packet)
-            return
+    with open(path, "wb") as file:
+        while not done.is_set():
+            packet = read_packet(arduino)
 
-        with packets_lock:
-            packets.append(packet)
+            if packet.header.session_id != session_id:
+                read_packets(arduino, first_packet)
+                break
+
+            with packets_lock:
+                packets.append(packet)
+
+            data = packet.SerializeToString()
+            file.write(data)
 
 def plot_variable():
     def animate(i):
@@ -69,14 +108,24 @@ def plot_variable():
 
 
 def main():
+    packet = packet_pb2.Packet()
+    packet.header.session_id = 2
+    data = packet.SerializeToString()
+    print(data)
+    print(data_to_packet(data))
+
+
     if not os.path.exists(data_dir):
         os.makedirs(data_dir)
 
-    thread = threading.Thread(target=read_packets)
+    arduino = serial.Serial(port="COM8", baudrate=9600)
+    thread = threading.Thread(target=read_packets, args=(arduino))
     thread.start()
 
     plot_variable()
     done.set()
+    thread.join()
+    arduino.close()
     
 
     """global done
