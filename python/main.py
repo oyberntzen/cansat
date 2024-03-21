@@ -33,6 +33,7 @@ def read_packet(arduino):
         length = int(first_byte[0])
 
         data = arduino.read(length)
+        print(data)
         if len(data) != length:
             continue
 
@@ -44,10 +45,12 @@ def read_packet(arduino):
         return packet
 
 def read_packets(arduino, first_packet=None):
+    print("Reading")
     global packets
 
     if first_packet == None:
         first_packet = read_packet(arduino)
+        print(first_packet)
     session_id = first_packet.header.session_id
 
     # Read packets from file

@@ -1,4 +1,6 @@
+//#define DEBUG
 #include "libraries/radio.cpp"
+
 
 Packet packet;
 
@@ -7,13 +9,12 @@ void setup() {
 
     while (!Serial);
 
-    radio::init();
+    radio::init(false);
 }
 
 void loop() {
     radio::recieve();
     packet = radio::decode();
-    // TODO: check if valid packet
     radio::sendSerial();
 
     /*Serial.print("Temperature: ");

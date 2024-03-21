@@ -5,6 +5,7 @@
 #include "Arduino.h"
 #include <LoRa.h>
 #include <SPI.h>
+#include <SD.h>
 
 #ifdef DEBUG
 #define PRINT(content) Serial.println(content)
@@ -20,13 +21,15 @@ namespace radio {
     uint8_t buffer[Packet_size + sizeof(packet_id)];
     uint8_t buffer_size = 0;
     bool packet_sent = true;
+    bool async = false;
 
     void onPacketSent() {
         packet_sent = true;
         PRINT("Packet sent");
     }
 
-    void init() {
+    void init(bool is_async) {
+        async = is_async;
         if (!LoRa.begin(868E6)) {
             PRINT("Failed to initialize radio!");
             while (1);
@@ -35,7 +38,7 @@ namespace radio {
         LoRa.setSpreadingFactor(11);
         LoRa.setSignalBandwidth(125e3);
 
-        LoRa.onTxDone(onPacketSent);
+        if (async) LoRa.onTxDone(onPacketSent);
 
         PRINT("Radio initialized");
     }
@@ -78,12 +81,12 @@ namespace radio {
     }
 
     void send() {
-        if (packet_sent) {
+        if (packet_sent || !async) {
             if (LoRa.beginPacket() == 0) {
                 PRINT("beginPacket failed");
             }
             LoRa.write(buffer, buffer_size);
-            if (LoRa.endPacket(true) == 0) {
+            if (LoRa.endPacket(async) == 0) {
                 PRINT("endPacket failed");
             }
             packet_sent = false;

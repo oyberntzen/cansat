@@ -54,7 +54,7 @@ void setup() {
     }
     PRINT("SD card initialized");
 
-    radio::init();
+    radio::init(true);
 
     PRINT("Waiting for GPS");
     //while (!GPS.available()) {}
