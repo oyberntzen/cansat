@@ -20,6 +20,10 @@ float convertBMIData(int16_t data, int max) {
 
 File file;
 
+uint64_t last_time = 0;
+
+int stop_pin = 6;
+
 void setup() {
     Serial.begin(9600);
     while (!Serial);
@@ -62,6 +66,10 @@ void setup() {
     char filename[32];
     sprintf(filename, "%llu.txt", session_id);
     file = SD.open(filename, FILE_WRITE);
+
+    last_time = millis();
+
+    pinMode(stop_pin, INPUT_PULLUP);
 }
 
 void loop() {
@@ -171,5 +179,11 @@ void loop() {
 
     counter++;
 
-    delay(1000);
+    delay(100);
+    uint64_t deltaTime = millis() - last_time;
+    PRINT_INLINE("Packet send time: ");
+    PRINT(deltaTime);
+    last_time = millis();
+
+    while (digitalRead(stop_pin) == LOW);
 }

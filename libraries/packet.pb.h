@@ -79,7 +79,7 @@ extern "C" {
 /* Field tags (for use in manual encoding/decoding) */
 #define Header_index_tag                         1
 #define Header_time_tag                          2
-#define Header_session_id_tag                    4
+#define Header_session_id_tag                    3
 #define Telemetry_ENV_temperature_tag            1
 #define Telemetry_ENV_humidity_tag               2
 #define Telemetry_ENV_pressure_tag               3
@@ -114,7 +114,7 @@ X(a, STATIC,   OPTIONAL, MESSAGE,  telemetry,         2)
 #define Header_FIELDLIST(X, a) \
 X(a, STATIC,   SINGULAR, UINT32,   index,             1) \
 X(a, STATIC,   SINGULAR, UINT64,   time,              2) \
-X(a, STATIC,   SINGULAR, UINT64,   session_id,        4)
+X(a, STATIC,   SINGULAR, UINT64,   session_id,        3)
 #define Header_CALLBACK NULL
 #define Header_DEFAULT NULL
 

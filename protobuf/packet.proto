@@ -8,7 +8,7 @@ message Packet {
 message Header {
     uint32 index = 1;
     uint64 time = 2;
-    uint64 session_id = 4;
+    uint64 session_id = 3;
 }
 
 message Telemetry {

@@ -5,7 +5,6 @@
 #include "Arduino.h"
 #include <LoRa.h>
 #include <SPI.h>
-#include <SD.h>
 
 #ifdef DEBUG
 #define PRINT(content) Serial.println(content)
@@ -20,21 +19,33 @@ namespace radio {
     const uint8_t packet_id_size = sizeof(packet_id);
     uint8_t buffer[Packet_size + sizeof(packet_id)];
     uint8_t buffer_size = 0;
+    bool packet_sent = true;
+
+    void onPacketSent() {
+        packet_sent = true;
+        PRINT("Packet sent");
+    }
 
     void init() {
         if (!LoRa.begin(868E6)) {
             PRINT("Failed to initialize radio!");
             while (1);
         }
+
+        LoRa.setSpreadingFactor(11);
+        LoRa.setSignalBandwidth(125e3);
+
+        LoRa.onTxDone(onPacketSent);
+
         PRINT("Radio initialized");
     }
 
     void printBuffer() {
         for (int i = 0; i < buffer_size; i++) {
-            Serial.print(buffer[i]);
-            Serial.print(" ");
+            PRINT_INLINE(buffer[i]);
+            PRINT_INLINE(" ");
         }
-        Serial.println();
+        PRINT();
     }
 
     uint64_t random2() {
@@ -59,7 +70,7 @@ namespace radio {
         bool status = pb_decode(&stream, Packet_fields, &packet);
 
         if (!status) {
-            Serial.println("Failed to parse packet");
+            PRINT("Failed to parse packet");
             return Packet_init_zero;
         }
 
@@ -67,12 +78,16 @@ namespace radio {
     }
 
     void send() {
-        if (LoRa.beginPacket() == 0) {
-            Serial.println("beginPacket failed");
-        }
-        LoRa.write(buffer, buffer_size);
-        if (LoRa.endPacket() == 0) {
-            Serial.println("endPacket failed");
+        if (packet_sent) {
+            if (LoRa.beginPacket() == 0) {
+                PRINT("beginPacket failed");
+            }
+            LoRa.write(buffer, buffer_size);
+            if (LoRa.endPacket(true) == 0) {
+                PRINT("endPacket failed");
+            }
+            packet_sent = false;
+            PRINT("Sending packet");
         }
     }
 
