@@ -8,7 +8,7 @@ message Packet {
 message Header {
     uint32 index = 1;
     uint64 time = 2;
-    uint32 session_id = 3;
+    uint64 session_id = 4;
 }
 
 message Telemetry {
@@ -18,5 +18,24 @@ message Telemetry {
         float pressure = 3;
         float light = 4;
     }
+    message GPS {
+        float latitude = 1;
+        float longitude = 2;
+        float altitude = 3;
+        float speed = 4;
+        uint32 satellites = 5;
+        uint64 epoch_time = 6;
+    }
+    message BMI160 {
+        float accX = 1;
+        float accY = 2;
+        float accZ = 3;
+        float gyroX = 4;
+        float gyroY = 5;
+        float gyroZ = 6;
+    }
+
     ENV env = 1;
+    GPS gps = 2;
+    BMI160 bmi160 = 3;
 }

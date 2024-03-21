@@ -14,7 +14,7 @@ _sym_db = _symbol_database.Default()
 
 
 
-DESCRIPTOR = _descriptor_pool.Default().AddSerializedFile(b'\n\x0cpacket.proto\"@\n\x06Packet\x12\x17\n\x06header\x18\x01 \x01(\x0b\x32\x07.Header\x12\x1d\n\ttelemetry\x18\x02 \x01(\x0b\x32\n.Telemetry\"9\n\x06Header\x12\r\n\x05index\x18\x01 \x01(\r\x12\x0c\n\x04time\x18\x02 \x01(\x04\x12\x12\n\nsession_id\x18\x03 \x01(\r\"w\n\tTelemetry\x12\x1b\n\x03\x65nv\x18\x01 \x01(\x0b\x32\x0e.Telemetry.ENV\x1aM\n\x03\x45NV\x12\x13\n\x0btemperature\x18\x01 \x01(\x02\x12\x10\n\x08humidity\x18\x02 \x01(\x02\x12\x10\n\x08pressure\x18\x03 \x01(\x02\x12\r\n\x05light\x18\x04 \x01(\x02\x62\x06proto3')
+DESCRIPTOR = _descriptor_pool.Default().AddSerializedFile(b'\n\x0cpacket.proto\"@\n\x06Packet\x12\x17\n\x06header\x18\x01 \x01(\x0b\x32\x07.Header\x12\x1d\n\ttelemetry\x18\x02 \x01(\x0b\x32\n.Telemetry\"9\n\x06Header\x12\r\n\x05index\x18\x01 \x01(\r\x12\x0c\n\x04time\x18\x02 \x01(\x04\x12\x12\n\nsession_id\x18\x04 \x01(\x04\"\x8d\x03\n\tTelemetry\x12\x1b\n\x03\x65nv\x18\x01 \x01(\x0b\x32\x0e.Telemetry.ENV\x12\x1b\n\x03gps\x18\x02 \x01(\x0b\x32\x0e.Telemetry.GPS\x12!\n\x06\x62mi160\x18\x03 \x01(\x0b\x32\x11.Telemetry.BMI160\x1aM\n\x03\x45NV\x12\x13\n\x0btemperature\x18\x01 \x01(\x02\x12\x10\n\x08humidity\x18\x02 \x01(\x02\x12\x10\n\x08pressure\x18\x03 \x01(\x02\x12\r\n\x05light\x18\x04 \x01(\x02\x1as\n\x03GPS\x12\x10\n\x08latitude\x18\x01 \x01(\x02\x12\x11\n\tlongitude\x18\x02 \x01(\x02\x12\x10\n\x08\x61ltitude\x18\x03 \x01(\x02\x12\r\n\x05speed\x18\x04 \x01(\x02\x12\x12\n\nsatellites\x18\x05 \x01(\r\x12\x12\n\nepoch_time\x18\x06 \x01(\x04\x1a_\n\x06\x42MI160\x12\x0c\n\x04\x61\x63\x63X\x18\x01 \x01(\x02\x12\x0c\n\x04\x61\x63\x63Y\x18\x02 \x01(\x02\x12\x0c\n\x04\x61\x63\x63Z\x18\x03 \x01(\x02\x12\r\n\x05gyroX\x18\x04 \x01(\x02\x12\r\n\x05gyroY\x18\x05 \x01(\x02\x12\r\n\x05gyroZ\x18\x06 \x01(\x02\x62\x06proto3')
 
 _globals = globals()
 _builder.BuildMessageAndEnumDescriptors(DESCRIPTOR, _globals)
@@ -25,8 +25,12 @@ if _descriptor._USE_C_DESCRIPTORS == False:
   _globals['_PACKET']._serialized_end=80
   _globals['_HEADER']._serialized_start=82
   _globals['_HEADER']._serialized_end=139
-  _globals['_TELEMETRY']._serialized_start=141
-  _globals['_TELEMETRY']._serialized_end=260
-  _globals['_TELEMETRY_ENV']._serialized_start=183
-  _globals['_TELEMETRY_ENV']._serialized_end=260
+  _globals['_TELEMETRY']._serialized_start=142
+  _globals['_TELEMETRY']._serialized_end=539
+  _globals['_TELEMETRY_ENV']._serialized_start=248
+  _globals['_TELEMETRY_ENV']._serialized_end=325
+  _globals['_TELEMETRY_GPS']._serialized_start=327
+  _globals['_TELEMETRY_GPS']._serialized_end=442
+  _globals['_TELEMETRY_BMI160']._serialized_start=444
+  _globals['_TELEMETRY_BMI160']._serialized_end=539
 # @@protoc_insertion_point(module_scope)

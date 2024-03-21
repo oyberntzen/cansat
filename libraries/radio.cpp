@@ -5,18 +5,28 @@
 #include "Arduino.h"
 #include <LoRa.h>
 #include <SPI.h>
+#include <SD.h>
+
+#ifdef DEBUG
+#define PRINT(content) Serial.println(content)
+#define PRINT_INLINE(content) Serial.print(content)
+#else
+#define PRINT(content)
+#define PRINT_INLINE(content)
+#endif
 
 namespace radio {
-    uint8_t packet_id[] = {1, 2, 3};
+    uint8_t packet_id[] = {'I', 'N', 'V'};
     const uint8_t packet_id_size = sizeof(packet_id);
     uint8_t buffer[Packet_size + sizeof(packet_id)];
     uint8_t buffer_size = 0;
 
     void init() {
         if (!LoRa.begin(868E6)) {
-            Serial.println("Starting LoRa failed!");
+            PRINT("Failed to initialize radio!");
             while (1);
         }
+        PRINT("Radio initialized");
     }
 
     void printBuffer() {
@@ -27,6 +37,15 @@ namespace radio {
         Serial.println();
     }
 
+    uint64_t random2() {
+        uint64_t num = 0;
+        for (int i = 0; i < 8; i++) {
+            num |= uint64_t(LoRa.random()) << i*8;
+            delay(100);
+        }
+        return num;
+    }
+
     void encode(Packet packet) {
         memcpy(buffer, packet_id, packet_id_size);
         pb_ostream_t stream = pb_ostream_from_buffer(buffer+packet_id_size, Packet_size);
@@ -35,7 +54,7 @@ namespace radio {
     }
 
     Packet decode() {
-        Packet packet = Packet_init_zero;
+        Packet packet;
         pb_istream_t stream = pb_istream_from_buffer(buffer+packet_id_size, buffer_size-packet_id_size);
         bool status = pb_decode(&stream, Packet_fields, &packet);
 
@@ -76,7 +95,7 @@ namespace radio {
         }
         
         if (memcmp(buffer, packet_id, packet_id_size) != 0) {
-            Serial.println("Wrong packet id");
+            //Serial.println("Wrong packet id");
             recieve();
         }
     }
@@ -86,6 +105,11 @@ namespace radio {
         for (int i = 0; i < buffer_size-packet_id_size; i++) {
             Serial.write(buffer[i + packet_id_size]);
         }
+    }
+
+    void saveToFile(File file) {
+        file.write(buffer_size - packet_id_size);
+        file.write(buffer+packet_id_size, buffer_size-packet_id_size);
     }
 }
 

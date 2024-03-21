@@ -18,4 +18,10 @@ PB_BIND(Telemetry, Telemetry, AUTO)
 PB_BIND(Telemetry_ENV, Telemetry_ENV, AUTO)
 
 
+PB_BIND(Telemetry_GPS, Telemetry_GPS, AUTO)
+
+
+PB_BIND(Telemetry_BMI160, Telemetry_BMI160, AUTO)
+
+
 

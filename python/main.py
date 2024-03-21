@@ -40,8 +40,8 @@ def read_packet(arduino):
         if packet == None:
             continue
         print(packet)
+        print(packet.telemetry.gps.latitude)
         return packet
-
 
 def read_packets(arduino, first_packet=None):
     global packets
@@ -58,7 +58,7 @@ def read_packets(arduino, first_packet=None):
             with open(path, "rb") as file:
                 while True:
                     first_byte = file.read(1)
-                    if len(first_packet) != 1:
+                    if len(first_byte) != 1:
                         break
                     length = int(first_byte[0])
 
@@ -108,18 +108,19 @@ def plot_variable():
 
 
 def main():
-    packet = packet_pb2.Packet()
+    """packet = packet_pb2.Packet()
     packet.header.session_id = 2
     data = packet.SerializeToString()
     print(data)
-    print(data_to_packet(data))
+    print(data_to_packet(data))"""
 
 
     if not os.path.exists(data_dir):
         os.makedirs(data_dir)
 
-    arduino = serial.Serial(port="COM8", baudrate=9600)
-    thread = threading.Thread(target=read_packets, args=(arduino))
+    arduino = serial.Serial(port="COM6", baudrate=9600, timeout=0.1)
+    #read_packets(arduino)
+    thread = threading.Thread(target=read_packets, args=(arduino, None))
     thread.start()
 
     plot_variable()
