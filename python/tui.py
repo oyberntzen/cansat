@@ -41,7 +41,7 @@ class TUI:
 
         self.options = [Option(sessions, 0, 0)]
         for i in range(self.dimensions):
-            self.options.append(Option(variables, (i+1)*20, 0))
+            self.options.append(Option(variables, (i+1)*30, 0))
         self.current_option = 0
 
         self.packet = packet
