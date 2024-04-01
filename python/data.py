@@ -39,8 +39,6 @@ class DataManager:
         self.sessions = {}
         self.last_session_added = None
         
-        self.session_pipes = {} 
-        
         self.data_dir = "./data"
 
         self.arduino = None
@@ -59,16 +57,12 @@ class DataManager:
             self.sessions[session] = []
         self.sessions[session].append(packet)
 
-        for pipe in self.session_pipes[session]:
-            pipe.send(packet)
-
         data = packet.SerializeToString()
         with open(self.session_file(session), "ab+") as file:
-            file.write(bytes(len(data)) + bytes(data))
+            file.write(len(data).to_bytes(1) + bytes(data))
 
         if session != self.last_session_added:
             self.last_session_added = session
-            self.send_sessions()
 
     def from_file(self, session):
         packets = []
@@ -106,21 +100,19 @@ class DataManager:
 
         packet = data_to_packet(data)
         if packet != None:
-            session = Session(packet.header.session_id, True)
-            self.add_packet(packet, True)
+            session = Session(packet.header.session_id, False)
+            self.add_packet(packet, session)
             return packet, session
         return None
 
-    def add_session_pipe(self, pipe, session):
-        if not session in self.session_pipes:
-            self.session_pipes[session] = []
-        self.session_pipes[session].append(pipe)
-
-        i = 0
-        for packet in self.sessions[session]:
-            print(i, packet)
-            pipe.send(packet)
-            i += 1
+    def all_sessions(self):
+        sessions = list(self.sessions.keys())
+        for session in sessions:
+            if session == self.last_session_added:
+                session.serial = True
+            else:
+                session.serial = False
+        return sessions
 
 def data_to_packet(data):
     packet = packet_pb2.Packet()
@@ -132,5 +124,4 @@ def data_to_packet(data):
     return packet
 
 if __name__ == "__main__":
-    session = Session(213, True, False)
-    print(session.__hash__())
+    manager = DataManager(None)

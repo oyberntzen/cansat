@@ -5,11 +5,12 @@ import time
 import plot
 
 def main():
-    data_manager = data.DataManager(None)
+    data_manager = data.DataManager("COM6")
+    #data_manager = data.DataManager(None)
 
     #variables = list(map(lambda x: x(), plot.all_variables(packet)))
     variables = list(plot.all_variables().keys())
-    term = tui.TUI(list(data_manager.sessions.keys()), variables, 2, None)
+    term = tui.TUI(data_manager.all_sessions(), variables, 2, None)
 
     current_session = None
     plot_pipes = {}
@@ -17,14 +18,20 @@ def main():
     while True:
         new_data = data_manager.read_serial_packet()
         if new_data != None:
-            term.change_sessions(list(data_manager.sessions.keys()))
+            term.change_sessions(data_manager.all_sessions())
             if current_session != None:
                 term.change_packet(data_manager.sessions[current_session][-1])
             
             packet, session = new_data
             if session in plot_pipes:
+                removes = []
                 for pipe in plot_pipes[session]:
-                    pipe.send(packet)
+                    if pipe.poll():
+                        removes.append(pipe)
+                    else:
+                        pipe.send(packet)
+                for pipe in removes:
+                    plot_pipes[session].remove(pipe)
 
         message = term.update()
         if message != None:

@@ -21,14 +21,13 @@ class Option:
         return self.options[self.selected]
 
     def change_options(self, new_options):
-        #print(new_options)
-        if len(self.options) == 0:
-            return
-        for i, option in enumerate(new_options):
-            if option == self.options[self.selected]:
-                self.selected = i
-                return
-        self.selected = 0
+        new_selected = 0
+        if len(self.options) != 0:
+            for i, option in enumerate(new_options):
+                if option == self.options[self.selected]:
+                    new_selected = i
+                    break
+        self.selected = new_selected
         self.options = new_options
 
 QUIT = 0
@@ -37,14 +36,20 @@ PLOT_VARIABLE = 2
 
 class TUI:
     def __init__(self, sessions, variables, dimensions, packet):
+        self.packet_pos = (0, 0)
+        self.sessions_pos = (40, 0)
+        self.options_pos = (80, 0)
+        self.options_spacing = 15
+
         self.dimensions = dimensions
 
-        self.options = [Option(sessions, 0, 0)]
+        self.options = [Option(sessions, self.sessions_pos[0], self.sessions_pos[1])]
         for i in range(self.dimensions):
-            self.options.append(Option(variables, (i+1)*30, 0))
+            self.options.append(Option(variables, self.options_pos[0]+self.options_spacing*i, self.options_pos[1]))
         self.current_option = 0
 
         self.packet = packet
+
 
         ptg.hide_cursor()
         self.draw()
@@ -87,7 +92,7 @@ class TUI:
         ptg.clear()
         for i in range(self.current_option+1):
             self.options[i].draw()
-        ptg.print_to((0, 10), self.packet)
+        ptg.print_to(self.packet_pos, self.packet)
 
     def change_sessions(self, new_sessions):
         self.options[0].change_options(new_sessions)

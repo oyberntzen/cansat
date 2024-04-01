@@ -23,7 +23,7 @@ def all_path_variables(packet=packet_pb2.Packet(), path=[]):
 
     variable_path = path.copy()
     def value(packet):
-        current_variable = packet
+        current_variable = packet[-1]
         for i in variable_path:
             current_variable = getattr(current_variable, i)
         return current_variable
@@ -50,33 +50,35 @@ class Plot2D:
         self.x_values = []
         self.y_values = []
 
-        variables = all_variables()
-        x_variable = variables[self.x_name]
-        y_variable = variables[self.y_name]
-        for packet in packets:
-            self.add_packet(packet, x_variable, y_variable)
+        self.starting_packets = packets
+        self.packets = []
 
         self.changed = True
 
-    def add_packet(self, packet, x_variable, y_variable):
-        self.x_values.append(x_variable.value(packet))
-        self.y_values.append(y_variable.value(packet))
+    def add_packet(self, packet):
+        self.packets.append(packet)
+        self.x_values.append(self.x_variable.value(self.packets))
+        self.y_values.append(self.y_variable.value(self.packets))
 
     def run(self):
         variables = all_variables()
         self.x_variable = variables[self.x_name]
         self.y_variable = variables[self.y_name]
 
+        for packet in self.starting_packets:
+            self.add_packet(packet)
+
         fig = plt.figure()
         self.axes = fig.add_subplot(1,1,1)
         ani = animation.FuncAnimation(fig, self.animate, interval=200, cache_frame_data=False)
         plt.show()
+        self.session_pipe.send(0)
 
     def animate(self, i):
         while self.session_pipe.poll():
             self.changed = True
             packet = self.session_pipe.recv()
-            self.add_packet(packet, self.x_variable, self.y_variable)
+            self.add_packet(packet)
 
         if self.changed:
             self.axes.clear()

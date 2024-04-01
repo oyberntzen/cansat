@@ -57,7 +57,7 @@ void setup() {
     radio::init(true);
 
     PRINT("Waiting for GPS");
-    //while (!GPS.available()) {}
+    while (!GPS.available()) {}
 
     session_id = GPS.getTime();
     PRINT_INLINE("Session ID: ");
@@ -104,36 +104,35 @@ void loop() {
     packet.telemetry.env.pressure = pressure;
     packet.telemetry.env.light = light;
 
-    if (GPS.available()) {
-        float latitude = GPS.latitude();
-        float longitude = GPS.longitude();
-        float altitude = GPS.altitude();
-        float speed = GPS.speed();
-        int satellites = GPS.satellites();
-        uint64_t epoch_time = GPS.getTime();
+    while (!GPS.available());
+    float latitude = GPS.latitude();
+    float longitude = GPS.longitude();
+    float altitude = GPS.altitude();
+    float speed = GPS.speed();
+    int satellites = GPS.satellites();
+    uint64_t epoch_time = GPS.getTime();
 
-        PRINT("GPS data");
-        PRINT_INLINE("Latitude: ");
-        PRINT(latitude);
-        PRINT_INLINE("Longitude: ");
-        PRINT(longitude);
-        PRINT_INLINE("Altitude: ");
-        PRINT(altitude);
-        PRINT_INLINE("Speed: ");
-        PRINT(speed);
-        PRINT_INLINE("Satellites: ");
-        PRINT(satellites);
-        PRINT_INLINE("Epoch time: ");
-        PRINT(epoch_time);
+    PRINT("GPS data");
+    PRINT_INLINE("Latitude: ");
+    PRINT(latitude);
+    PRINT_INLINE("Longitude: ");
+    PRINT(longitude);
+    PRINT_INLINE("Altitude: ");
+    PRINT(altitude);
+    PRINT_INLINE("Speed: ");
+    PRINT(speed);
+    PRINT_INLINE("Satellites: ");
+    PRINT(satellites);
+    PRINT_INLINE("Epoch time: ");
+    PRINT(epoch_time);
 
-        packet.telemetry.has_gps = true;
-        packet.telemetry.gps.latitude = latitude;
-        packet.telemetry.gps.longitude = longitude;
-        packet.telemetry.gps.altitude = altitude;
-        packet.telemetry.gps.speed = speed;
-        packet.telemetry.gps.satellites = satellites;
-        packet.telemetry.gps.epoch_time = epoch_time;        
-    }
+    packet.telemetry.has_gps = true;
+    packet.telemetry.gps.latitude = latitude;
+    packet.telemetry.gps.longitude = longitude;
+    packet.telemetry.gps.altitude = altitude;
+    packet.telemetry.gps.speed = speed;
+    packet.telemetry.gps.satellites = satellites;
+    packet.telemetry.gps.epoch_time = epoch_time;
     
     int16_t rawAccX, rawAccY, rawAccZ;
     BMI160.getAcceleration(&rawAccX, &rawAccY, &rawAccZ);
@@ -179,7 +178,7 @@ void loop() {
 
     counter++;
 
-    delay(100);
+    //delay(100);
     uint64_t deltaTime = millis() - last_time;
     PRINT_INLINE("Packet send time: ");
     PRINT(deltaTime);
