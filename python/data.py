@@ -24,6 +24,8 @@ class Session:
         return self.id*2 + int(self.arduino)
 
     def __eq__(self, other):
+        if other is None:
+            return False
         return (self.id == other.id) and (self.arduino == other.arduino)
     
     def __str__(self):
@@ -33,10 +35,8 @@ class Session:
         return f"{prefix} {time} {suffix}"
 
 class DataManager:
-    def __init__(self, pipe, arduino_port):
+    def __init__(self, arduino_port):
         self.sessions = {}
-        self.pipe = pipe
-        self.sending_session = None
         self.last_session_added = None
         
         self.session_pipes = {} 
@@ -53,19 +53,11 @@ class DataManager:
 
     def session_file(self, session):
         return f"{self.data_dir}/{session.filename()}"
-
-    def send_sessions(self):
-        message = list(self.sessions.keys())
-        self.pipe.send((pipe_header.SESSIONS, message))
     
-    def add_packet(self, packet, arduino):
-        session = Session(packet.header.session_id, arduino)
+    def add_packet(self, packet, session):
         if not session in self.sessions:
             self.sessions[session] = []
         self.sessions[session].append(packet)
-
-        if session == self.sending_session:
-            self.pipe.send((pipe_header.PACKET, packet))
 
         for pipe in self.session_pipes[session]:
             pipe.send(packet)
@@ -100,57 +92,35 @@ class DataManager:
 
     def read_serial_packet(self):
         if self.arduino == None:
-            return
+            return None
 
         first_byte = self.arduino.read(1)
         if len(first_byte) == 0:
-            return
+            return None
 
         length = int(first_byte[0])
 
         data = self.arduino.read(length)
         if len(data) != length:
-            return
+            return None
 
         packet = data_to_packet(data)
         if packet != None:
+            session = Session(packet.header.session_id, True)
             self.add_packet(packet, True)
-
-    def read_message(self):
-        #print("Checking for message")
-        if self.pipe.poll(timeout=0.1):
-            #print("Got message")
-            try:
-                message = self.pipe.recv()
-                if message[0] == pipe_header.CHANGE_SESSION:
-                    session = message[1]
-                    self.sending_session = session
-                    for packet in self.sessions[session]:
-                        self.pipe.send((pipe_header.PACKET, packet))
-                elif message[0] == pipe_header.ADD_PIPE:
-                    pipe, session = message[1]
-                    self.add_session_pipe(pipe, session)
-            except EOFError:
-                return True
-        return False
+            return packet, session
+        return None
 
     def add_session_pipe(self, pipe, session):
         if not session in self.session_pipes:
             self.session_pipes[session] = []
         self.session_pipes[session].append(pipe)
 
+        i = 0
         for packet in self.sessions[session]:
+            print(i, packet)
             pipe.send(packet)
-
-    def run(self):
-        self.send_sessions()
-        while True:
-            self.read_serial_packet()
-            if self.read_message():
-                break
-        
-        if self.arduino != None:
-            self.arduino.close()
+            i += 1
 
 def data_to_packet(data):
     packet = packet_pb2.Packet()

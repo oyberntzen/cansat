@@ -21,7 +21,7 @@ class Option:
         return self.options[self.selected]
 
     def change_options(self, new_options):
-        print(new_options)
+        #print(new_options)
         if len(self.options) == 0:
             return
         for i, option in enumerate(new_options):

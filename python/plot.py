@@ -30,7 +30,7 @@ class PathVariable:
         return current_packet
 
 class Plot2D:
-    def __init__(self, session_pipe, x_variable, y_variable):
+    def __init__(self, session_pipe, x_variable, y_variable, packets):
         self.session_pipe = session_pipe
         self.x_variable = x_variable
         self.y_variable = y_variable
@@ -38,39 +38,31 @@ class Plot2D:
         self.x_values = []
         self.y_values = []
 
+        for packet in packets:
+            self.add_packet(packet)
+
+        self.changed = True
+
+    def add_packet(self, packet):
+        self.x_values.append(self.x_variable.value(packet))
+        self.y_values.append(self.y_variable.value(packet))
+
+    def run(self):
         fig = plt.figure()
         self.axes = fig.add_subplot(1,1,1)
         ani = animation.FuncAnimation(fig, self.animate, interval=200)
         plt.show()
 
     def animate(self, i):
-        changed = False
         while self.session_pipe.poll():
-            changed = True
+            self.changed = True
             packet = self.session_pipe.recv()
-            self.x_values.append(self.x_variable.value(packet))
-            self.y_values.append(self.y_variable.value(packet))
+            self.add_packet(packet)
 
-        if changed:
+        if self.changed:
             self.axes.clear()
             self.axes.plot(self.x_values, self.y_values)
-
-def plot2d(data_pipe, x_var, y_var):
-    x = []
-    y = []
-    def animate(i):
-        with packets_lock:
-            for p in packets:
-                x.append(p.header.index)
-                y.append(p.telemetry.env.temperature)
-
-        ax1.clear()
-        ax1.plot(x, y)
-    fig = plt.figure()
-    ax1 = fig.add_subplot(1,1,1)
-    ani = animation.FuncAnimation(fig, animate, interval=200)
-    plt.show()
-
+        self.changed = False
 
 if __name__ == "__main__":
     packet = packet_pb2.Packet()
