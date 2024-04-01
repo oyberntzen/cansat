@@ -1,17 +1,14 @@
 import data
 import multiprocessing
-import pipe_header
 import tui
 import time
 import plot
-import packet_pb2
 
 def main():
     data_manager = data.DataManager(None)
 
-    packet = packet_pb2.Packet()
     #variables = list(map(lambda x: x(), plot.all_variables(packet)))
-    variables = plot.all_variables(packet)
+    variables = list(plot.all_variables().keys())
     term = tui.TUI(list(data_manager.sessions.keys()), variables, 2, None)
 
     current_session = None
