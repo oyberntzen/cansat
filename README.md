@@ -16,6 +16,8 @@ Serial communication with Arduino: https://pypi.org/project/pyserial/
 
 Packet encoding/decoding: https://pypi.org/project/protobuf/
 
+Plotting: https://pypi.org/project/matplotlib/
+
 ## Setup
 
 The libraries folder has to be copied to the reciever folder and satellite folder.
