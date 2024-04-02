@@ -1,6 +1,7 @@
 import packet_pb2
 import matplotlib.pyplot as plt
 import matplotlib.animation as animation
+import math
 
 class Variable:
     def __init__(self, value, name):
@@ -30,8 +31,25 @@ def all_path_variables(packet=packet_pb2.Packet(), path=[]):
 
     return [Variable(value, variable_path[-1])]
 
+def altitude2(packets):
+    average_temperature = 0
+    for packet in packets:
+        average_temperature += packet.telemetry.env.temperature + 273.15
+    average_temperature /= len(packets)
+
+    pressure0 = packets[0].telemetry.env.pressure
+    pressure1 = packets[-1].telemetry.env.pressure
+
+    gas_constant = 8.314
+    gravity = 9.81
+    molar_mass = 0.029
+
+    height = gas_constant*average_temperature / (gravity*molar_mass) * math.log(pressure0/pressure1)
+    return height
+
 def all_variables():
     variables = all_path_variables()
+    variables.append(Variable(altitude2, "altitude2"))
 
     variables_dict = {}
     for variable in variables:
