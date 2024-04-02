@@ -22,8 +22,8 @@ def all_path_variables(packet=packet_pb2.Packet(), path=[]):
         return variables
 
     variable_path = path.copy()
-    def value(packet):
-        current_variable = packet[-1]
+    def value(packets):
+        current_variable = packets[-1]
         for i in variable_path:
             current_variable = getattr(current_variable, i)
         return current_variable

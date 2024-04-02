@@ -57,14 +57,19 @@ void setup() {
     radio::init(true);
 
     PRINT("Waiting for GPS");
-    while (!GPS.available()) {}
+    //while (!GPS.available()) {}
 
     session_id = GPS.getTime();
     PRINT_INLINE("Session ID: ");
     PRINT(session_id);
+    //session_id = 123;
 
     char filename[32];
-    sprintf(filename, "%llu.txt", session_id);
+    sprintf(filename, "a%d", int(session_id));
+
+    PRINT_INLINE("Filename: ");
+    PRINT(filename);
+
     file = SD.open(filename, FILE_WRITE);
 
     last_time = millis();
@@ -73,6 +78,8 @@ void setup() {
 }
 
 void loop() {
+    while (digitalRead(stop_pin) == LOW);
+
     PRINT_INLINE("\nSending packet: ");
     PRINT(counter);
 
@@ -104,7 +111,7 @@ void loop() {
     packet.telemetry.env.pressure = pressure;
     packet.telemetry.env.light = light;
 
-    while (!GPS.available());
+    //while (!GPS.available());
     float latitude = GPS.latitude();
     float longitude = GPS.longitude();
     float altitude = GPS.altitude();
@@ -178,11 +185,9 @@ void loop() {
 
     counter++;
 
-    //delay(100);
+    delay(1000);
     uint64_t deltaTime = millis() - last_time;
     PRINT_INLINE("Packet send time: ");
     PRINT(deltaTime);
     last_time = millis();
-
-    while (digitalRead(stop_pin) == LOW);
 }

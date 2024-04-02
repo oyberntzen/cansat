@@ -1,5 +1,4 @@
 import pytermgui as ptg
-import inspect
 
 class Option:
     def __init__(self, options, x, y):
@@ -12,7 +11,7 @@ class Option:
     def draw(self):
         for i, option in enumerate(self.options):
             cursor = ">" if i == self.selected else " "
-            ptg.print_to((self.x, self.y+i+1), f"{cursor} {str(option)}")
+            ptg.print_to((self.x, self.y+i), f"{cursor} {str(option)}")
 
     def move(self, offset):
         self.selected = (self.selected + offset) % len(self.options)
@@ -35,10 +34,10 @@ CHANGE_SESSION = 1
 PLOT_VARIABLE = 2
 
 class TUI:
-    def __init__(self, sessions, variables, dimensions, packet):
-        self.packet_pos = (0, 0)
-        self.sessions_pos = (40, 0)
-        self.options_pos = (80, 0)
+    def __init__(self, sessions, variables, dimensions):
+        self.packet_pos = (0, 1)
+        self.sessions_pos = (40, 1)
+        self.options_pos = (80, 1)
         self.options_spacing = 15
 
         self.dimensions = dimensions
@@ -48,21 +47,19 @@ class TUI:
             self.options.append(Option(variables, self.options_pos[0]+self.options_spacing*i, self.options_pos[1]))
         self.current_option = 0
 
-        self.packet = packet
-
+        self.variables = variables
 
         ptg.hide_cursor()
-        self.draw()
+        self.draw([])
 
-    def update(self):
+    def update(self, packets):
         key = ptg.getch()
-        changed = True
         message = None
+        changed = True
 
         if key == "q":
             ptg.show_cursor()
             message = (QUIT, None)
-            changed = False
         elif key == "w":
             self.options[self.current_option].move(-1)
         elif key == "s":
@@ -84,23 +81,23 @@ class TUI:
             changed = False
 
         if changed:
-            self.draw()
+            self.draw(packets)
 
         return message
 
-    def draw(self):
+    def draw(self, packets):
         ptg.clear()
         for i in range(self.current_option+1):
             self.options[i].draw()
-        ptg.print_to(self.packet_pos, self.packet)
+        #ptg.print_to(self.packet_pos, self.packet)
+
+        if len(packets) > 0:
+            for i, variable in enumerate(self.variables):
+                value = variable.value(packets)
+                ptg.print_to((self.packet_pos[0], self.packet_pos[1]+i), f"{variable.name}: {value}")
 
     def change_sessions(self, new_sessions):
         self.options[0].change_options(new_sessions)
-        self.draw()
-
-    def change_packet(self, new_packet):
-        self.packet = new_packet
-        self.draw()
 
 if __name__ == "__main__":
     import time

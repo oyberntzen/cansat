@@ -1,7 +1,6 @@
 import serial
 import packet_pb2
 from google.protobuf.message import DecodeError 
-import pipe_header
 import os
 from datetime import datetime
 
@@ -12,12 +11,12 @@ class Session:
         self.serial = serial
 
     def from_filename(filename):
-        arduino = filename[0] == "a"
+        arduino = filename[0] == "A"
         id = int(filename[1:])
         return Session(id, arduino, False)
     
     def filename(self):
-        prefix = "a" if self.arduino else "r"
+        prefix = "A" if self.arduino else "R"
         return f"{prefix}{str(self.id)}"
 
     def __hash__(self):
