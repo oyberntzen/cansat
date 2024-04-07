@@ -2,6 +2,8 @@
 #include <Arduino_MKRGPS.h>
 #include <BMI160Gen.h>
 #include <SD.h>
+#include <string>
+#include <sstream>
 
 #include <math.h>
 
@@ -34,12 +36,6 @@ void setup() {
     }
     PRINT("MKR ENV shield initialized");
 
-    if (!GPS.begin()) {
-        PRINT("Failed to initialize MKR GPS shield!");
-        while (1);
-    }
-    PRINT("MKR GPS shield initialized");
-
     if (!BMI160.begin(BMI160GenClass::I2C_MODE, 0x69)) {
         PRINT("Failed to initialize BMI160!");
         while (1);
@@ -47,6 +43,12 @@ void setup() {
     BMI160.setAccelerometerRange(accelerometerRange);
     BMI160.setGyroRange(gyroRange);
     PRINT("BMI160 initialized");
+
+    if (!GPS.begin()) {
+        PRINT("Failed to initialize MKR GPS shield!");
+        while (1);
+    }
+    PRINT("MKR GPS shield initialized");
 
     if (!SD.begin(4)) {
         PRINT("Failed to initialize SD card!");
@@ -57,20 +59,26 @@ void setup() {
     radio::init(true);
 
     PRINT("Waiting for GPS");
-    //while (!GPS.available()) {}
+    while (!GPS.available()) {}
 
     session_id = GPS.getTime();
     PRINT_INLINE("Session ID: ");
     PRINT(session_id);
     //session_id = 123;
 
-    char filename[32];
-    sprintf(filename, "a%d", int(session_id));
+    std::stringstream stream;
+    stream << std::hex << session_id << ".ard";
+    std::string filename(stream.str());
 
     PRINT_INLINE("Filename: ");
-    PRINT(filename);
+    PRINT(filename.c_str());
 
-    file = SD.open(filename, FILE_WRITE);
+    file = SD.open(filename.c_str(), FILE_WRITE);
+    if (!file) {
+        PRINT("Failed to open file");
+        while (1);
+    }
+    PRINT("File opened");
 
     last_time = millis();
 
@@ -111,7 +119,8 @@ void loop() {
     packet.telemetry.env.pressure = pressure;
     packet.telemetry.env.light = light;
 
-    //while (!GPS.available());
+    while (!GPS.available());
+    //GPS.available();
     float latitude = GPS.latitude();
     float longitude = GPS.longitude();
     float altitude = GPS.altitude();

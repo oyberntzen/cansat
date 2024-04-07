@@ -24,4 +24,10 @@ PB_BIND(Telemetry_GPS, Telemetry_GPS, AUTO)
 PB_BIND(Telemetry_BMI160, Telemetry_BMI160, AUTO)
 
 
+PB_BIND(Telemetry_Radio, Telemetry_Radio, AUTO)
+
+
+PB_BIND(Telemetry_Gas, Telemetry_Gas, AUTO)
+
+
 

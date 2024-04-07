@@ -51,8 +51,10 @@ def main():
                 if not current_session in plot_pipes:
                     plot_pipes[current_session] = []
                 plot_pipes[current_session].append(pipe)
+                
+                plot_variables, plot_last, plot_num, plot_equal = message_data
 
-                plotter = plot.Plot2D(plot_pipe, message_data[0].name, message_data[1].name, data_manager.sessions[current_session])
+                plotter = plot.Plot2D(plot_pipe, list(map(str, plot_variables)), plot_last, plot_num, plot_equal, data_manager.sessions[current_session])
                 plot_process = multiprocessing.Process(target=plotter.run)
                 plot_process.start()
 

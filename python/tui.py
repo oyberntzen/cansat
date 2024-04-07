@@ -79,7 +79,8 @@ class TUI:
         self.num_dimensions = ChoiceField(["2D", "3D"])
         self.plot_start_choice = ChoiceField(["From:", "Last:"])
         self.plot_start_num = NumberField()
-        self.plot_option = Option([self.num_dimensions, self.plot_start_choice, self.plot_start_num], self.plot_pos[0], self.plot_pos[1])
+        self.plot_axis = ChoiceField(["Auto", "Equal"])
+        self.plot_option = Option([self.num_dimensions, self.plot_start_choice, self.plot_start_num, self.plot_axis], self.plot_pos[0], self.plot_pos[1])
 
         self.dimensions_option = []
         max_dimensions = 3
@@ -121,7 +122,10 @@ class TUI:
                 variables = []
                 for i in range(num_dimensions):
                     variables.append(self.dimensions_option[i].selected_option())
-                message = (PLOT_VARIABLE, variables)
+                plot_last = self.plot_start_choice.selected == 1
+                plot_num = self.plot_start_num.num
+                plot_axis = self.plot_axis.selected == 1
+                message = (PLOT_VARIABLE, (variables, plot_last, plot_num, plot_axis))
 
         else:
             selected = self.options[self.current_option].selected_option()

@@ -11,13 +11,15 @@ class Session:
         self.serial = serial
 
     def from_filename(filename):
-        arduino = filename[0] == "A"
-        id = int(filename[1:])
+        id_hex, extension = filename.lower().split(".")
+        arduino = extension == "ard"
+        id = int(id_hex, 16)
         return Session(id, arduino, False)
     
     def filename(self):
-        prefix = "A" if self.arduino else "R"
-        return f"{prefix}{str(self.id)}"
+        id_hex = hex(self.id)[2:]
+        extension = "ard" if self.arduino else "rad"
+        return f"{id_hex}.{extension}"
 
     def __hash__(self):
         return self.id*2 + int(self.arduino)

@@ -22,6 +22,7 @@ namespace radio {
     uint8_t buffer_size = 0;
     bool packet_sent = true;
     bool async = false;
+    bool decoded = true;
 
     void onPacketSent() {
         packet_sent = true;
@@ -76,6 +77,7 @@ namespace radio {
             PRINT("Failed to parse packet");
             return Packet_init_zero;
         }
+        decoded = status;
 
         return packet;
     }
@@ -128,6 +130,14 @@ namespace radio {
     void saveToFile(File file) {
         file.write(buffer_size - packet_id_size);
         file.write(buffer+packet_id_size, buffer_size-packet_id_size);
+    }
+
+    int RSSI() {
+        return LoRa.rssi();
+    }
+
+    float SNR() {
+        return LoRa.packetSnr();
     }
 }
 

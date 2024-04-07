@@ -34,8 +34,13 @@ message Telemetry {
         float gyroY = 5;
         float gyroZ = 6;
     }
+    message Radio {
+        int32 RSSI = 1;
+        float SNR = 2;
+    }
 
     ENV env = 1;
     GPS gps = 2;
     BMI160 bmi160 = 3;
+    Radio radio = 4;
 }

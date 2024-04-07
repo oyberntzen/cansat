@@ -15,15 +15,15 @@ void setup() {
 void loop() {
     radio::recieve();
     packet = radio::decode();
-    radio::sendSerial();
 
-    /*Serial.print("Temperature: ");
-    Serial.println(packet.telemetry.env.temperature);
-    Serial.print("Humidity: ");
-    Serial.println(packet.telemetry.env.humidity);
-    Serial.print("Pressure: ");
-    Serial.println(packet.telemetry.env.pressure);
-    Serial.print("Light: ");
-    Serial.println(packet.telemetry.env.light);
-    Serial.println();*/
+    if (!radio::decoded) {
+        return;
+    }
+
+    packet.telemetry.has_radio = true;
+    packet.telemetry.radio.RSSI = radio::RSSI();
+    packet.telemetry.radio.SNR = radio::SNR();
+
+    radio::encode(packet);
+    radio::sendSerial();
 }
