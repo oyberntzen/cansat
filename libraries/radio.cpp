@@ -100,8 +100,8 @@ namespace radio {
         buffer_size = 0;
         while (buffer_size == 0) {
             buffer_size = LoRa.parsePacket();
-            //Serial.println(packet_size);
         }
+        PRINT(buffer_size);
 
         if (buffer_size > packet_id_size + Packet_size) {
             for (int i = 0; i < buffer_size; i++) {
@@ -112,7 +112,10 @@ namespace radio {
         //int packet_size = LoRa.parsePacket();
         for (int i = 0; i < buffer_size; i++) {
             buffer[i] = LoRa.read();
+            PRINT_INLINE(buffer[i]);
+            PRINT_INLINE(" ");
         }
+        PRINT();
         
         if (memcmp(buffer, packet_id, packet_id_size) != 0) {
             //Serial.println("Wrong packet id");

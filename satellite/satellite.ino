@@ -24,21 +24,37 @@ File file;
 
 uint64_t last_time = 0;
 
-int stop_pin = 6;
+int stop_pin = 1;
+
+bool builtin_state = false;
+
+void error(int code) {
+    while (true) {
+        for (int i = 0; i < code; i++) {
+            digitalWrite(LED_BUILTIN, HIGH);
+            delay(300);
+            digitalWrite(LED_BUILTIN, LOW);
+            delay(300);
+        }
+        delay(2000);
+    }
+}
 
 void setup() {
+    pinMode(LED_BUILTIN, OUTPUT);
+
     Serial.begin(9600);
-    while (!Serial);
+    //while (!Serial);
 
     if (!ENV.begin()) {
         PRINT("Failed to initialize MKR ENV shield!");
-        while (1);
+        error(1);
     }
     PRINT("MKR ENV shield initialized");
 
     if (!BMI160.begin(BMI160GenClass::I2C_MODE, 0x69)) {
         PRINT("Failed to initialize BMI160!");
-        while (1);
+        error(2);
     }
     BMI160.setAccelerometerRange(accelerometerRange);
     BMI160.setGyroRange(gyroRange);
@@ -46,20 +62,22 @@ void setup() {
 
     if (!GPS.begin()) {
         PRINT("Failed to initialize MKR GPS shield!");
-        while (1);
+        error(3);
     }
     PRINT("MKR GPS shield initialized");
 
     if (!SD.begin(4)) {
         PRINT("Failed to initialize SD card!");
-        while (1);
+        error(5);
     }
     PRINT("SD card initialized");
 
     radio::init(true);
   
+    digitalWrite(LED_BUILTIN, HIGH);
     PRINT("Waiting for GPS");
     while (!GPS.available()) {}
+    digitalWrite(LED_BUILTIN, LOW);
 
     session_id = GPS.getTime();
     PRINT_INLINE("Session ID: ");
@@ -76,7 +94,7 @@ void setup() {
     file = SD.open(filename.c_str(), FILE_WRITE);
     if (!file) {
         PRINT("Failed to open file");
-        while (1);
+        error(6);
     }
     PRINT("File opened");
 
@@ -87,6 +105,9 @@ void setup() {
 
 void loop() {
     while (digitalRead(stop_pin) == LOW);
+
+    builtin_state = !builtin_state;
+    digitalWrite(LED_BUILTIN, builtin_state);
 
     PRINT_INLINE("\nSending packet: ");
     PRINT(counter);
@@ -194,7 +215,7 @@ void loop() {
 
     counter++;
 
-    delay(1000);
+    //delay(1000);
     uint64_t deltaTime = millis() - last_time;
     PRINT_INLINE("Packet send time: ");
     PRINT(deltaTime);

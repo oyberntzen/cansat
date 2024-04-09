@@ -113,6 +113,7 @@ class DataManager:
                 session.serial = True
             else:
                 session.serial = False
+        sessions.sort(key = lambda s: -s.__hash__())
         return sessions
 
 def data_to_packet(data):

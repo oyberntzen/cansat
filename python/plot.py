@@ -145,7 +145,6 @@ class Plot2D:
                 if self.last:
                     plot_values.append(self.values[dimension][-self.num:])
                 else:
-                    print(self.num)
                     plot_values.append(self.values[dimension][self.num:])
 
             self.axes.plot(*plot_values)
