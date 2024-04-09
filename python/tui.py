@@ -1,4 +1,5 @@
 import pytermgui as ptg
+import multiprocessing
 
 class Option:
     def __init__(self, options, x, y):
@@ -61,6 +62,31 @@ class NumberField:
             return True
         return False
 
+class Logger:
+    def __init__(self, x, y, length):
+        self.x = x
+        self.y = y
+        self.length = length
+
+        self.logs = []
+        self.queue = multiprocessing.Queue()
+    
+    def update(self):
+        changed = False
+        while not self.queue.empty():
+            changed = True
+            log = self.queue.get()
+            self.logs.append(log)
+        
+        while len(self.logs) > self.length:
+            self.logs.pop(0)
+
+        return changed
+    
+    def draw(self):
+        for i in range(len(self.logs)):
+            ptg.print_to((self.x, self.y+i), self.logs[-(i+1)])
+
 QUIT = 0
 CHANGE_SESSION = 1
 PLOT_VARIABLE = 2
@@ -73,6 +99,7 @@ class TUI:
         self.plot_pos = (60, 1)
         self.options_pos = (80, 1)
         self.options_spacing = 15
+        self.logger_pos = (150, 1)
 
         self.session_option = Option(sessions, self.sessions_pos[0], self.sessions_pos[1]) 
 
@@ -92,6 +119,8 @@ class TUI:
 
         self.variables = variables
 
+        self.plotter = Logger(self.logger_pos[0], self.logger_pos[1], 20)
+
         ptg.hide_cursor()
         self.draw([])
 
@@ -99,6 +128,9 @@ class TUI:
         key = ptg.getch()
         message = None
         changed = True
+
+        if key != "":
+            self.plotter.queue.put(f"Key pressed: {key}")
 
         if key == "q":
             ptg.show_cursor()
@@ -134,6 +166,9 @@ class TUI:
             else:
                 changed = False
 
+        if self.plotter.update():
+            changed = True
+
         if changed and message == None:
             message = (CHANGED, None)
 
@@ -151,6 +186,8 @@ class TUI:
                 if type(value) == float:
                     value = round(value, 4)
                 ptg.print_to((self.packet_pos[0], self.packet_pos[1]+i), f"{variable.name}: {value}")
+
+        self.plotter.draw()
 
     def change_sessions(self, new_sessions):
         self.options[0].change_options(new_sessions)
