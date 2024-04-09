@@ -34,32 +34,32 @@ class Option:
 class ChoiceField:
     def __init__(self, choices):
         self.choices = choices
-        self.selected = 0
+        self.value = 0
 
     def __str__(self):
-        return str(self.choices[self.selected])
+        return str(self.choices[self.value])
 
     def update(self, key):
         if key == "f":
-            self.selected = (self.selected+1) % len(self.choices)
+            self.value = (self.value+1) % len(self.choices)
             return True
         return False
 
 class NumberField:
     def __init__(self):
-        self.num = 0
+        self.value = 0
 
     def __str__(self):
-        return str(self.num)
+        return str(self.value)
 
     def update(self, key):
         if key == "f":
-            self.num = 0
+            self.value = 0
             return True
         if key.isdigit():
             digit = int(key)
-            self.num *= 10
-            self.num += digit
+            self.value *= 10
+            self.value += digit
             return True
         return False
 
@@ -107,10 +107,12 @@ class TUI:
         self.session_option = Option(sessions, self.sessions_pos[0], self.sessions_pos[1]) 
 
         self.num_dimensions = ChoiceField(["2D", "3D"])
-        self.plot_start_choice = ChoiceField(["From:", "Last:"])
-        self.plot_start_num = NumberField()
-        self.plot_axis = ChoiceField(["Auto", "Equal"])
-        self.plot_option = Option([self.num_dimensions, self.plot_start_choice, self.plot_start_num, self.plot_axis], self.plot_pos[0], self.plot_pos[1])
+        self.plot_settings = {
+            "start_choice": ChoiceField(["From:", "Last:"]),
+            "start_num": NumberField(),
+            "axis": ChoiceField(["Auto", "Equal"])
+        }
+        self.plot_option = Option([self.num_dimensions, *list(self.plot_settings.values())], self.plot_pos[0], self.plot_pos[1])
 
         self.dimensions_option = []
         max_dimensions = 3
@@ -122,7 +124,7 @@ class TUI:
 
         self.variables = variables
 
-        self.plotter = Logger(self.logger_pos[0], self.logger_pos[1], 20)
+        self.logger = Logger(self.logger_pos[0], self.logger_pos[1], 20)
 
         ptg.hide_cursor()
         self.draw([])
@@ -133,7 +135,7 @@ class TUI:
         changed = True
 
         if key != "":
-            self.plotter.queue.put(f"Key pressed: {key}")
+            self.logger.queue.put(f"Key pressed: {key}")
 
         if key == "q":
             ptg.show_cursor()
@@ -151,16 +153,18 @@ class TUI:
                 new_session = self.options[0].selected_option()
                 message = (CHANGE_SESSION, new_session)
 
-            num_dimensions = self.num_dimensions.selected+2
+            num_dimensions = self.num_dimensions.value+2
             if self.current_option == num_dimensions+2:
                 self.current_option = 1
                 variables = []
                 for i in range(num_dimensions):
                     variables.append(self.dimensions_option[i].selected_option())
-                plot_last = self.plot_start_choice.selected == 1
-                plot_num = self.plot_start_num.num
-                plot_axis = self.plot_axis.selected == 1
-                message = (PLOT_VARIABLE, (variables, plot_last, plot_num, plot_axis))
+                
+                plot_settings_values = {}
+                for name, setting in self.plot_settings.items():
+                    plot_settings_values[name] = setting.value
+
+                message = (PLOT_VARIABLE, (variables, plot_settings_values))
 
         else:
             selected = self.options[self.current_option].selected_option()
@@ -169,7 +173,7 @@ class TUI:
             else:
                 changed = False
 
-        if self.plotter.update():
+        if self.logger.update():
             changed = True
 
         if changed and message == None:
@@ -190,7 +194,7 @@ class TUI:
                     value = round(value, 4)
                 ptg.print_to((self.packet_pos[0], self.packet_pos[1]+i), f"{variable.name}: {value}")
 
-        self.plotter.draw()
+        self.logger.draw()
 
     def change_sessions(self, new_sessions):
         self.options[0].change_options(new_sessions)

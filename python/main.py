@@ -3,11 +3,12 @@ import multiprocessing
 import tui
 import time
 import plot
+import variables
 
 def main():
-    variables = list(plot.all_variables().values())
-    term = tui.TUI([], variables)
-    data_manager = data.DataManager("COM6", term.plotter.queue)
+    vars = list(variables.all_variables().values())
+    term = tui.TUI([], vars)
+    data_manager = data.DataManager("COM6", term.logger.queue)
 
     term.change_sessions(data_manager.all_sessions())
 
@@ -52,9 +53,9 @@ def main():
                     plot_pipes[current_session] = []
                 plot_pipes[current_session].append(pipe)
                 
-                plot_variables, plot_last, plot_num, plot_equal = message_data
+                plot_variables, plot_settings = message_data
 
-                plotter = plot.Plot2D(plot_pipe, list(map(str, plot_variables)), plot_last, plot_num, plot_equal, data_manager.sessions[current_session])
+                plotter = plot.Plot(plot_pipe, list(map(str, plot_variables)), plot_settings, data_manager.sessions[current_session], term.logger.queue)
                 plot_process = multiprocessing.Process(target=plotter.run)
                 plot_process.start()
 
