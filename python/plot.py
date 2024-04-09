@@ -140,5 +140,13 @@ class Plot2D:
                     if self.dimensions == 3:
                         self.axes.set(zlim=(min(self.values[2]), max(self.values[2])))
 
-            self.axes.plot(*self.values)
+            plot_values = []
+            for dimension in range(self.dimensions):
+                if self.last:
+                    plot_values.append(self.values[dimension][-self.num:])
+                else:
+                    print(self.num)
+                    plot_values.append(self.values[dimension][self.num:])
+
+            self.axes.plot(*plot_values)
         self.changed = False

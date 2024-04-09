@@ -46,12 +46,6 @@ typedef struct _Telemetry_Radio {
     float SNR;
 } Telemetry_Radio;
 
-typedef struct _Telemetry_Gas {
-    float co2;
-    float metan;
-    float metan_threshold;
-} Telemetry_Gas;
-
 typedef struct _Telemetry {
     bool has_env;
     Telemetry_ENV env;
@@ -61,8 +55,6 @@ typedef struct _Telemetry {
     Telemetry_BMI160 bmi160;
     bool has_radio;
     Telemetry_Radio radio;
-    bool has_gas;
-    Telemetry_Gas gas;
 } Telemetry;
 
 typedef struct _Packet {
@@ -80,20 +72,18 @@ extern "C" {
 /* Initializer values for message structs */
 #define Packet_init_default                      {false, Header_init_default, false, Telemetry_init_default}
 #define Header_init_default                      {0, 0, 0}
-#define Telemetry_init_default                   {false, Telemetry_ENV_init_default, false, Telemetry_GPS_init_default, false, Telemetry_BMI160_init_default, false, Telemetry_Radio_init_default, false, Telemetry_Gas_init_default}
+#define Telemetry_init_default                   {false, Telemetry_ENV_init_default, false, Telemetry_GPS_init_default, false, Telemetry_BMI160_init_default, false, Telemetry_Radio_init_default}
 #define Telemetry_ENV_init_default               {0, 0, 0, 0}
 #define Telemetry_GPS_init_default               {0, 0, 0, 0, 0, 0}
 #define Telemetry_BMI160_init_default            {0, 0, 0, 0, 0, 0}
 #define Telemetry_Radio_init_default             {0, 0}
-#define Telemetry_Gas_init_default               {0, 0, 0}
 #define Packet_init_zero                         {false, Header_init_zero, false, Telemetry_init_zero}
 #define Header_init_zero                         {0, 0, 0}
-#define Telemetry_init_zero                      {false, Telemetry_ENV_init_zero, false, Telemetry_GPS_init_zero, false, Telemetry_BMI160_init_zero, false, Telemetry_Radio_init_zero, false, Telemetry_Gas_init_zero}
+#define Telemetry_init_zero                      {false, Telemetry_ENV_init_zero, false, Telemetry_GPS_init_zero, false, Telemetry_BMI160_init_zero, false, Telemetry_Radio_init_zero}
 #define Telemetry_ENV_init_zero                  {0, 0, 0, 0}
 #define Telemetry_GPS_init_zero                  {0, 0, 0, 0, 0, 0}
 #define Telemetry_BMI160_init_zero               {0, 0, 0, 0, 0, 0}
 #define Telemetry_Radio_init_zero                {0, 0}
-#define Telemetry_Gas_init_zero                  {0, 0, 0}
 
 /* Field tags (for use in manual encoding/decoding) */
 #define Header_index_tag                         1
@@ -117,14 +107,10 @@ extern "C" {
 #define Telemetry_BMI160_gyroZ_tag               6
 #define Telemetry_Radio_RSSI_tag                 1
 #define Telemetry_Radio_SNR_tag                  2
-#define Telemetry_Gas_co2_tag                    1
-#define Telemetry_Gas_metan_tag                  2
-#define Telemetry_Gas_metan_threshold_tag        3
 #define Telemetry_env_tag                        1
 #define Telemetry_gps_tag                        2
 #define Telemetry_bmi160_tag                     3
 #define Telemetry_radio_tag                      4
-#define Telemetry_gas_tag                        5
 #define Packet_header_tag                        1
 #define Packet_telemetry_tag                     2
 
@@ -148,15 +134,13 @@ X(a, STATIC,   SINGULAR, UINT64,   session_id,        3)
 X(a, STATIC,   OPTIONAL, MESSAGE,  env,               1) \
 X(a, STATIC,   OPTIONAL, MESSAGE,  gps,               2) \
 X(a, STATIC,   OPTIONAL, MESSAGE,  bmi160,            3) \
-X(a, STATIC,   OPTIONAL, MESSAGE,  radio,             4) \
-X(a, STATIC,   OPTIONAL, MESSAGE,  gas,               5)
+X(a, STATIC,   OPTIONAL, MESSAGE,  radio,             4)
 #define Telemetry_CALLBACK NULL
 #define Telemetry_DEFAULT NULL
 #define Telemetry_env_MSGTYPE Telemetry_ENV
 #define Telemetry_gps_MSGTYPE Telemetry_GPS
 #define Telemetry_bmi160_MSGTYPE Telemetry_BMI160
 #define Telemetry_radio_MSGTYPE Telemetry_Radio
-#define Telemetry_gas_MSGTYPE Telemetry_Gas
 
 #define Telemetry_ENV_FIELDLIST(X, a) \
 X(a, STATIC,   SINGULAR, FLOAT,    temperature,       1) \
@@ -192,13 +176,6 @@ X(a, STATIC,   SINGULAR, FLOAT,    SNR,               2)
 #define Telemetry_Radio_CALLBACK NULL
 #define Telemetry_Radio_DEFAULT NULL
 
-#define Telemetry_Gas_FIELDLIST(X, a) \
-X(a, STATIC,   SINGULAR, FLOAT,    co2,               1) \
-X(a, STATIC,   SINGULAR, FLOAT,    metan,             2) \
-X(a, STATIC,   SINGULAR, FLOAT,    metan_threshold,   3)
-#define Telemetry_Gas_CALLBACK NULL
-#define Telemetry_Gas_DEFAULT NULL
-
 extern const pb_msgdesc_t Packet_msg;
 extern const pb_msgdesc_t Header_msg;
 extern const pb_msgdesc_t Telemetry_msg;
@@ -206,7 +183,6 @@ extern const pb_msgdesc_t Telemetry_ENV_msg;
 extern const pb_msgdesc_t Telemetry_GPS_msg;
 extern const pb_msgdesc_t Telemetry_BMI160_msg;
 extern const pb_msgdesc_t Telemetry_Radio_msg;
-extern const pb_msgdesc_t Telemetry_Gas_msg;
 
 /* Defines for backwards compatibility with code written before nanopb-0.4.0 */
 #define Packet_fields &Packet_msg
@@ -216,18 +192,16 @@ extern const pb_msgdesc_t Telemetry_Gas_msg;
 #define Telemetry_GPS_fields &Telemetry_GPS_msg
 #define Telemetry_BMI160_fields &Telemetry_BMI160_msg
 #define Telemetry_Radio_fields &Telemetry_Radio_msg
-#define Telemetry_Gas_fields &Telemetry_Gas_msg
 
 /* Maximum encoded size of messages (where known) */
 #define Header_size                              28
 #define PACKET_PB_H_MAX_SIZE                     Packet_size
-#define Packet_size                              161
+#define Packet_size                              143
 #define Telemetry_BMI160_size                    30
 #define Telemetry_ENV_size                       20
 #define Telemetry_GPS_size                       37
-#define Telemetry_Gas_size                       15
 #define Telemetry_Radio_size                     16
-#define Telemetry_size                           128
+#define Telemetry_size                           111
 
 #ifdef __cplusplus
 } /* extern "C" */
