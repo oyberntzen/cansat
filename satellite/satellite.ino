@@ -8,6 +8,7 @@
 #include <math.h>
 
 #define DEBUG
+//#define NO_GPS
 #include "libraries/radio.cpp"
 
 int counter = 0;
@@ -76,7 +77,11 @@ void setup() {
   
     digitalWrite(LED_BUILTIN, HIGH);
     PRINT("Waiting for GPS");
+
+    #ifndef NO_GPS
     while (!GPS.available()) {}
+    #endif
+
     digitalWrite(LED_BUILTIN, LOW);
 
     session_id = GPS.getTime();
@@ -140,8 +145,10 @@ void loop() {
     packet.telemetry.env.pressure = pressure;
     packet.telemetry.env.light = light;
 
+    #ifndef NO_GPS
     while (!GPS.available());
-    //GPS.available();
+    #endif
+
     float latitude = GPS.latitude();
     float longitude = GPS.longitude();
     float altitude = GPS.altitude();
@@ -215,7 +222,10 @@ void loop() {
 
     counter++;
 
-    //delay(1000);
+    #ifdef NO_GPS
+    delay(1000);
+    #endif
+
     uint64_t deltaTime = millis() - last_time;
     PRINT_INLINE("Packet send time: ");
     PRINT(deltaTime);
