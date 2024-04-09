@@ -68,7 +68,7 @@ void setup() {
 
     if (!SD.begin(4)) {
         PRINT("Failed to initialize SD card!");
-        error(5);
+        error(4);
     }
     PRINT("SD card initialized");
 

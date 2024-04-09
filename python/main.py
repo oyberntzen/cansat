@@ -5,11 +5,11 @@ import time
 import plot
 
 def main():
-    data_manager = data.DataManager("COM6")
-    #data_manager = data.DataManager(None)
-
     variables = list(plot.all_variables().values())
-    term = tui.TUI(data_manager.all_sessions(), variables)
+    term = tui.TUI([], variables)
+    data_manager = data.DataManager("COM6", term.plotter.queue)
+
+    term.change_sessions(data_manager.all_sessions())
 
     current_session = None
     plot_pipes = {}

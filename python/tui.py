@@ -1,5 +1,6 @@
 import pytermgui as ptg
 import multiprocessing
+import time
 
 class Option:
     def __init__(self, options, x, y):
@@ -76,7 +77,9 @@ class Logger:
         while not self.queue.empty():
             changed = True
             log = self.queue.get()
-            self.logs.append(log)
+
+            t = time.strftime("%H:%M:%S", time.gmtime())
+            self.logs.append(f"{t} {log}")
         
         while len(self.logs) > self.length:
             self.logs.pop(0)
@@ -99,7 +102,7 @@ class TUI:
         self.plot_pos = (60, 1)
         self.options_pos = (80, 1)
         self.options_spacing = 15
-        self.logger_pos = (150, 1)
+        self.logger_pos = (130, 1)
 
         self.session_option = Option(sessions, self.sessions_pos[0], self.sessions_pos[1]) 
 

@@ -32,11 +32,13 @@ class Session:
     def __str__(self):
         prefix = "a" if self.arduino else "r"
         time = datetime.fromtimestamp(self.id).strftime("%Y-%m-%d %H:%M:%S")
-        suffix = "(Serial)" if self.serial else ""
+        suffix = "(S)" if self.serial else ""
         return f"{prefix} {time} {suffix}"
 
 class DataManager:
-    def __init__(self, arduino_port):
+    def __init__(self, arduino_port, logger):
+        self.logger = logger
+
         self.sessions = {}
         self.last_session_added = None
         
@@ -44,7 +46,10 @@ class DataManager:
 
         self.arduino = None
         if arduino_port != None:
-            self.arduino = serial.Serial(port=arduino_port, baudrate=9600, timeout=0.1)
+            try:
+                self.arduino = serial.Serial(port=arduino_port, baudrate=9600, timeout=0.1)
+            except:
+                self.logger.put(f"Could not connect to {arduino_port}")
         
         for filename in os.listdir(self.data_dir):
             session = Session.from_filename(filename)
@@ -76,11 +81,11 @@ class DataManager:
 
                 data = file.read(length)
                 if len(data) != length:
-                    print("Wrong file data")
+                    print(f"Wrong file data ({session.id})")
                     break
-                packet = data_to_packet(data)
+                packet = self.data_to_packet(data)
                 if packet == None:
-                    print("Wrong file data")
+                    print(f"Wrong file data ({session.id})")
                     break
                 packets.append(packet)
         self.sessions[session] = packets
@@ -97,11 +102,14 @@ class DataManager:
 
         data = self.arduino.read(length)
         if len(data) != length:
+            self.logger.put("Wrong packet length")
             return None
 
-        packet = data_to_packet(data)
+        packet = self.data_to_packet(data)
         if packet != None:
-            session = Session(packet.header.session_id, False)
+            session_id = packet.header.session_id
+            self.logger.put(f"Recieved packet ({session_id})")
+            session = Session(session_id, False)
             self.add_packet(packet, session)
             return packet, session
         return None
@@ -116,14 +124,14 @@ class DataManager:
         sessions.sort(key = lambda s: -s.__hash__())
         return sessions
 
-def data_to_packet(data):
-    packet = packet_pb2.Packet()
-    try:
-        packet.ParseFromString(data)
-    except DecodeError as e:
-        print("Invalid packet")
-        return None
-    return packet
+    def data_to_packet(self, data):
+        packet = packet_pb2.Packet()
+        try:
+            packet.ParseFromString(data)
+        except DecodeError as e:
+            self.logger.put("Invalid packet")
+            return None
+        return packet
 
 if __name__ == "__main__":
     manager = DataManager(None)
